@@ -1,5 +1,7 @@
 package com.kamelprojet.classyadmin.configuration;
 
+import com.kamelprojet.classyadmin.entity.User;
+import com.kamelprojet.classyadmin.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -22,15 +24,23 @@ public class JwtUtils {
     @Value("${JWT_EXPIRATION_TIME}")
     private long expirationTime;
 
-    public String generateToken(String username) {
-        Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username);
+    private final UserRepository userRepository;
+
+    public JwtUtils(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
-    private String createToken(Map<String, Object> claims, String subject) {
+    public String generateToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        User user = userRepository.findByUsername(username);
+        return createToken(claims, username, String.valueOf(user.getRole().getName()));
+    }
+
+    private String createToken(Map<String, Object> claims, String subject, String role) {
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
+                .setAudience(role)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
