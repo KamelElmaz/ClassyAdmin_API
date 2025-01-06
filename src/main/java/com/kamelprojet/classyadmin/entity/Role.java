@@ -18,7 +18,7 @@ public class Role {
 
     @Id
     @GeneratedValue
-    private int id;
+    private Long id;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 100, nullable = false)
